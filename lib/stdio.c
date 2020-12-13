@@ -2,6 +2,7 @@
 #include "HalUart.h"
 #include "stdio.h"
 
+#define NULL (void*)0
 #define PRINTF_BUF_LEN 1024
 
 static char printf_buf[PRINTF_BUF_LEN];

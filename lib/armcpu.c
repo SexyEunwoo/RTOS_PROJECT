@@ -9,7 +9,7 @@ void enable_irq(void)
 	__asm__ ("POP {r0, r1}");
 }
 
-void enable_irq(void)
+void enable_fiq(void)
 {
 	__asm__ ("PUSH {r0, r1}");
 	__asm__ ("MRS r0, cpsr");
