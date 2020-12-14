@@ -1,21 +1,50 @@
-#ifndef _STDBOOL_H_
-#define _STDBOOL_H_
+/* Copyright (C) 1998-2014 Free Software Foundation, Inc.
 
-#ifndef __cpluscplus
+This file is part of GCC.
 
-#define bool _Bool
-#define true 1
-#define false 0
+GCC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
 
-#else
+GCC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-#define _Bool bool
-#define bool bool
-#define false false
-#define true true
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
 
-#endif
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  */
 
-#define __bool_true_false_are_defined
+/*
+ * ISO C Standard:  7.16  Boolean type and values  <stdbool.h>
+ */
 
-#endif
+#ifndef _STDBOOL_H
+#define _STDBOOL_H
+
+#ifndef __cplusplus
+
+#define bool	_Bool
+#define true	1
+#define false	0
+
+#else /* __cplusplus */
+
+/* Supporting <stdbool.h> in C++ is a GCC extension.  */
+#define _Bool	bool
+#define bool	bool
+#define false	false
+#define true	true
+
+#endif /* __cplusplus */
+
+/* Signal that all the definitions are present.  */
+#define __bool_true_false_are_defined	1
+
+#endif	/* stdbool.h */

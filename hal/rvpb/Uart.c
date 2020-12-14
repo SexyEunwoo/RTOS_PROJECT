@@ -1,3 +1,10 @@
+/*
+ * Uart.c
+ *
+ *  Created on: Sep 8, 2018
+ *      Author: maanu
+ */
+
 #include "stdint.h"
 #include "Uart.h"
 #include "HalUart.h"
@@ -5,46 +12,51 @@
 
 extern volatile PL011_t* Uart;
 
-static void Uart_interrupt_handler(void);
+static void interrupt_handler(void);
 
 void Hal_uart_init(void)
 {
-	// Enable UART
-	Uart->uartcr.bits.UARTEN = 0;
-	Uart->uartcr.bits.TXE = 1;
-	Uart->uartcr.bits.RXE = 1;
-	Uart->uartcr.bits.UARTEN = 1;
+    // Enable UART
+    Uart->uartcr.bits.UARTEN = 0;
+    Uart->uartcr.bits.TXE = 1;
+    Uart->uartcr.bits.RXE = 1;
+    Uart->uartcr.bits.UARTEN = 1;
 
-	Uart->uartimsc.bits.RXIM = 1;
+    // Enable input interrupt
+    Uart->uartimsc.bits.RXIM = 1;
 
-	Hal_interrupt_enable(UART_INTERRUPT0);
-	Hal_interrupt_register_handler(Uart_interrupt_handler, UART_INTERRUPT0);
+    // Register UART interrupt handler
+    Hal_interrupt_enable(UART_INTERRUPT0);
+    Hal_interrupt_register_handler(interrupt_handler, UART_INTERRUPT0);
 }
 
 void Hal_uart_put_char(uint8_t ch)
 {
-	while(Uart->uartfr.bits.TXFF);
-	Uart->uartdr.all = (ch & 0xFF);
+    while(Uart->uartfr.bits.TXFF);
+    Uart->uartdr.all = (ch & 0xFF);
 }
 
 uint8_t Hal_uart_get_char(void)
 {
-	uint8_t data;
+    uint32_t data;
 
-	while(Uart->uartfr.bits.RXFE);
+    while(Uart->uartfr.bits.RXFE);
 
-	if(Uart->uartdr.all & 0xFFFFFF00)
-	{
-		Uart->uartrsr.all = 0xFF;
-		return 0;
-	}
+    data = Uart->uartdr.all;
 
-	data = Uart->uartdr.bits.DATA;
-	return data;
+    // Check for an error flag
+    if (data & 0xFFFFFF00)
+    {
+        // Clear the error
+        Uart->uartrsr.all = 0xFF;
+        return 0;
+    }
+
+    return (uint8_t)(data & 0xFF);
 }
 
-static void Uart_interrupt_handler(void)
+static void interrupt_handler(void)
 {
-	uint8_t ch = Hal_uart_get_char();
-	Hal_uart_put_char(ch);
+    uint8_t ch = Hal_uart_get_char();
+    Hal_uart_put_char(ch);
 }
