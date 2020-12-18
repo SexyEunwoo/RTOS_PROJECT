@@ -59,4 +59,10 @@ static void interrupt_handler(void)
 {
     uint8_t ch = Hal_uart_get_char();
     Hal_uart_put_char(ch);
+<<<<<<< HEAD
+=======
+
+	Kernel_send_msg(KernelMsgQ_Task0, &ch, 1);
+	Kernel_send_events(KernelEventFlag_UartIn);
+>>>>>>> parent of 6d310e7... RTOS-2020-12-18 Finished
 }

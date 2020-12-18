@@ -9,6 +9,10 @@
 #include "stdlib.h"
 
 #include "Kernel.h"
+<<<<<<< HEAD
+=======
+#include "event.h"
+>>>>>>> parent of 6d310e7... RTOS-2020-12-18 Finished
 
 static void Hw_init(void);
 static void Kernel_init(void);
@@ -54,6 +58,10 @@ static void Kernel_init(void)
     uint32_t taskId;
 
     Kernel_task_init();
+<<<<<<< HEAD
+=======
+	Kernel_event_flag_init();
+>>>>>>> parent of 6d310e7... RTOS-2020-12-18 Finished
 
     taskId = Kernel_task_create(User_task0);
     if (NOT_ENOUGH_TASK_NUM == taskId)
@@ -107,8 +115,53 @@ void User_task0(void)
 
     while(true)
     {
+<<<<<<< HEAD
         debug_printf("User Task #0 SP=0x%x\n", &local);
         Kernel_yield();
+=======
+		KernelEventFlag_t handle_event = Kernel_wait_events(KernelEventFlag_UartIn|KernelEventFlag_CmdOut);
+		switch(handle_event)
+		{
+			case KernelEventFlag_UartIn:
+				Kernel_recv_msg(KernelMsgQ_Task0, &uartch, 1);
+				if(uartch == '\r')
+				{
+					cmdBuf[cmdBufIdx] = '\0';
+					while(true)
+					{
+						Kernel_send_events(KernelEventFlag_CmdIn);
+
+						if( Kernel_send_msg(KernelMsgQ_Task1, &cmdBufIdx, 1) == false)
+						{
+							Kernel_yield();	
+						}
+						else if( Kernel_send_msg(KernelMsgQ_Task1, &cmdBuf, cmdBufIdx) == false)
+						{
+							uint8_t rollback;
+							Kernel_recv_msg(KernelMsgQ_Task1, &rollback, 1);
+							Kernel_yield();
+						}
+						else
+						{
+							cmdBufIdx = 0;
+							break;
+						}
+					}
+				}
+				else
+				{
+					cmdBuf[cmdBufIdx] = uartch;
+					cmdBufIdx++;
+					cmdBufIdx %= 16;
+				}
+				break;
+			case KernelEventFlag_CmdOut:
+				debug_printf("\nTask0 CmdOut Event!\n");
+				break;
+		}
+		Kernel_yield();
+
+>>>>>>> parent of 6d310e7... RTOS-2020-12-18 Finished
     }
 }
 
@@ -118,7 +171,20 @@ void User_task1(void)
 
     while(true)
     {
+<<<<<<< HEAD
         debug_printf("User Task #1 SP=0x%x\n", &local);
+=======
+		KernelEventFlag_t handle_event = Kernel_wait_events(KernelEventFlag_CmdIn);
+		switch(handle_event)
+		{
+			case KernelEventFlag_CmdIn:
+				memclr(cmd, 16);
+				Kernel_recv_msg(KernelMsgQ_Task1, &cmdlen, 1);
+				Kernel_recv_msg(KernelMsgQ_Task1, &cmd, 16);
+				debug_printf("\nRecv Cmd: %s\n", cmd);
+				break;
+		}
+>>>>>>> parent of 6d310e7... RTOS-2020-12-18 Finished
         Kernel_yield();
     }
 }
