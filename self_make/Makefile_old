@@ -1,0 +1,47 @@
+MARCH = armv7-a					# Macro
+MCPU = cortex-a8				# Macro
+BOARD = rvpb
+
+CC = arm-none-eabi-gcc			# Macro
+AS = arm-none-eabi-as			# Macro
+LD = arm-none-eabi-ld			# Macro
+OC = arm-none-eabi-objcopy		# Macro
+
+LINKER_SCRIPT = navilos.ld		# Macro
+MAP_FILE = build/navilos.map	# Macro
+
+ASM_SRCS = $(wildcard boot/*.S)	# Macro and internal fnction
+ASM_OBJS = $(patsubst boot/%.S, build/%.os, $(ASM_SRCS)) # Macro and internal function
+
+C_SRCS = $(notdir $(wildcard boot/*.c)) # Macro and internal function
+C_SRCS += $(notdir $(wildcard hal/$(BOARD)/*.c))
+C_OBJS = $(patsubst %.c, build/%.o, $(C_SRCS))	# Macro and internal function
+
+CFLAGS = -c -g -std=c11
+
+INC_DIRS =	-I include  \
+			-I hal		\
+			-I hal/$(BOARD)
+
+TARGET=navilos.axf	# Target
+
+.PHONY: all clean
+
+all: $(TARGET)
+
+clean:
+	@rm -rf build
+
+run: $(TARGET)
+	qemu-system-arm -M realview-pb-a8 -kernel $(TARGET)	
+
+$(TARGET): $(ASM_OBJS) $(C_OBJS)  $(LINKER_SCRIPT)
+	$(LD) -n -T $(LINKER_SCRIPT) -o $(TARGET) $(ASM_OBJS) $(C_OBJS) -Map=$(MAP_FILE)
+
+build/%.os: $(ASM_SRCS)
+	mkdir -p $(shell dirname $@)
+	$(CC) -march=$(MARCH) -mcpu=$(MCPU) $(INC_DIRS) -c -g -o $@ $<
+		
+build/%.o: $(C_SRCS)
+	mkdir -p $(shell dirname $@)
+	$(CC) -march=$(MARCH) -mcpu=$(MCPU) $(INC_DIRS) $(CFLAGS) -o $@ $<
